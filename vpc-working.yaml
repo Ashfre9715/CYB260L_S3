@@ -1,0 +1,81 @@
+# Description of what this change includes
+# Revision number
+# Date
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  AWS CloudFormation template for a VPC spanning three Availability Zones
+  in the US-West-2 (Oregon) Region.
+
+# Note:
+# CloudFormation templates do not select the AWS Region directly.
+# Deploy this stack in us-west-2 to satisfy the regional requirement.
+
+Parameters:
+  VpcName:
+    Type: String
+    Default: VPC-asfre9715
+    Description: Name assigned to the VPC.
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref VpcName
+
+  # Public subnet in Availability Zone 1
+  PublicSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: VPC-asfre9715-Public-AZ1
+
+  # Public subnet in Availability Zone 2
+  PublicSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: VPC-asfre9715-Public-AZ2
+
+  # Public subnet in Availability Zone 3
+  PublicSubnetAZ3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: !Select [2, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: VPC-asfre9715-Public-AZ3
+
+Outputs:
+  VpcId:
+    Description: ID of the created VPC.
+    Value: !Ref VPC
+
+  VpcName:
+    Description: Name of the created VPC.
+    Value: !Ref VpcName
+
+  AvailabilityZones:
+    Description: Availability Zones used by the VPC subnets.
+    Value: !Join
+      - ', '
+      - - !GetAtt PublicSubnetAZ1.AvailabilityZone
+        - !GetAtt PublicSubnetAZ2.AvailabilityZone
+        - !GetAtt PublicSubnetAZ3.AvailabilityZone
